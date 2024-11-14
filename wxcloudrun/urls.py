@@ -22,8 +22,9 @@ urlpatterns = (
     # 计数器接口
     url(r'^^api/count(/)?$', views.counter),
 
-    # 获取主页
-    # url(r'(/)?$', views.index),
+
     path("get_user_info/<str:openid>/", views.get_user_info),
-    path("apply_join_club/<str:openid>/", views.apply_join_club)
+    path("apply_join_club/<str:openid>/", views.apply_join_club),
+    # 获取主页
+    url(r'(/)?$', views.index),
 )
