@@ -3,8 +3,7 @@ import logging
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from wxcloudrun.models import Counters
-
+from wxcloudrun.models import Counters, Member
 
 logger = logging.getLogger('log')
 
@@ -89,3 +88,41 @@ def update_count(request):
     else:
         return JsonResponse({'code': -1, 'errorMsg': 'action参数错误'},
                     json_dumps_params={'ensure_ascii': False})
+
+def get_user_info(request, openid):
+    """
+    获取用户信息
+
+     `` request `` 请求对象
+    """
+    user = Member.objects.filter(openid=openid)
+    if not user:
+        user_info = {"openid": openid, "nickname": None, "avatar": None,
+               "role": "guest", "type": "guest", "description": None,
+               "other": None, "create_time": None, "last_update": None}
+        return JsonResponse(user_info,
+                        json_dumps_params={'ensure_ascii': False})
+
+    user_info = user[0].to_dict()
+    return JsonResponse(user_info,
+                        json_dumps_params={'ensure_ascii': False})
+
+def apply_join_club(request, openid):
+    """
+    创建用户
+
+     `` request `` 请求对象
+    """
+    body_unicode = request.body.decode('utf-8')
+    body = json.loads(body_unicode)
+
+    user = Member.objects.filter(openid=openid)
+    if not user:
+        user = Member()
+        user.create_new_member(openid=openid, nickname=body['nickname'])
+    else:
+        user = user[0]
+
+    user_info = user.to_dict()
+    return JsonResponse(user_info,
+                        json_dumps_params={'ensure_ascii': False})
