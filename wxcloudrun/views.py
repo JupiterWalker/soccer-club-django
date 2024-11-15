@@ -89,12 +89,14 @@ def update_count(request):
         return JsonResponse({'code': -1, 'errorMsg': 'action参数错误'},
                     json_dumps_params={'ensure_ascii': False})
 
-def get_user_info(request, openid):
+def get_user_info(request):
     """
     获取用户信息
 
      `` request `` 请求对象
     """
+    logger.info('get_user_infoe request: {}'.format(request.headers))
+    openid = request.headers.get('openid', "no openid")
     user = Member.objects.filter(openid=openid)
     if not user:
         user_info = {"openid": openid, "nickname": None, "avatar": None,
@@ -107,12 +109,14 @@ def get_user_info(request, openid):
     return JsonResponse(user_info,
                         json_dumps_params={'ensure_ascii': False})
 
-def apply_join_club(request, openid):
+def apply_join_club(request):
     """
     创建用户
 
      `` request `` 请求对象
     """
+    logger.info('apply_join_club request: {}'.format(request.headers))
+    openid = request.headers.get('openid')
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 

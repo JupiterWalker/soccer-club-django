@@ -23,8 +23,8 @@ urlpatterns = (
     url(r'^^api/count(/)?$', views.counter),
 
 
-    path("get_user_info/<str:openid>/", views.get_user_info),
-    path("apply_join_club/<str:openid>/", views.apply_join_club),
+    path("get_user_info/", views.get_user_info),
+    path("apply_join_club/", views.apply_join_club),
     # 获取主页
-    url(r'(/)?$', views.index),
+    # url(r'(/)?$', views.index),
 )
