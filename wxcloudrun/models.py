@@ -68,9 +68,10 @@ class Member(models.Model):
                "other": self.other, "create_time": str(self.create_time), "last_update": str(self.last_update)}
         return res
 
-    def create_new_member(self, openid, nickname):
+    def create_new_member(self, openid, nickname, avatar):
         self.openid = openid
         self.nickname = nickname
+        self.avatar = avatar
         self.save()
 
 

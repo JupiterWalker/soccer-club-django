@@ -143,7 +143,7 @@ def apply_join_club(request):
     user = Member.objects.filter(openid=openid)
     if not user:
         user = Member()
-        user.create_new_member(openid=openid, nickname=body['nickname'])
+        user.create_new_member(openid=openid, nickname=body['nickname'], avatar=body['avatar'])
     else:
         user = user[0]
 
