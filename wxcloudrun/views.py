@@ -101,7 +101,7 @@ def set_user_info(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    assert request.method == 'UPDATE', 'POST method not allowed'
+    assert request.method == 'PUT', 'only PUT method is allowed'
     openid = request.headers.get('X-Wx-openid', "no openid")
     user = Member.objects.get(openid=openid)
     user.update(**request.body)
@@ -116,10 +116,10 @@ def get_user_info(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    openid = request.headers.get('X-Wx-openid', "no openid")
+    openid = request.META.get("headers").get('X-Wx-openid', "no openid")
     user = Member.objects.filter(openid=openid)
     if not user:
-        user_info = {"openid": openid, "nickname": None, "avatar": None,
+        user_info = {"openid": openid, "nickname": "unknown guest", "avatar": None,
                "role": "guest", "type": "guest", "description": None,
                "other": None, "create_time": None, "last_update": None}
         return JsonResponse(user_info,
@@ -136,7 +136,7 @@ def apply_join_club(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    openid = request.headers.get('X-Wx-openid')
+    openid = request.META.get("headers").get('X-Wx-openid')
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
