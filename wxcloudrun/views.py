@@ -116,7 +116,7 @@ def get_user_info(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    openid = request.META.get("headers").get('X-Wx-openid', "no openid")
+    openid = request.headers.get('X-Wx-openid', "no openid")
     user = Member.objects.filter(openid=openid)
     if not user:
         user_info = {"openid": openid, "nickname": "unknown guest", "avatar": None,
@@ -136,7 +136,7 @@ def apply_join_club(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    openid = request.META.get("headers").get('X-Wx-openid')
+    openid = request.headers.get('X-Wx-openid')
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
