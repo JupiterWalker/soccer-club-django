@@ -11,7 +11,7 @@ def add_request_log(request):
     logger.info('get_user_info request url: {},\n'
                 'method: {},\n'
                 'headers: {},\n'
-                'body: {}'.format(request.url, request.method, request.headers, request.body))
+                'body: {}'.format(request.path_info, request.method, request.headers, request.body))
 
 def index(request, _):
     """
