@@ -25,6 +25,7 @@ urlpatterns = (
 
     path("get_user_info/", views.get_user_info),
     path("apply_join_club/", views.apply_join_club),
+    path("set_user_info/", views.set_user_info),
     # 获取主页
     # url(r'(/)?$', views.index),
 )

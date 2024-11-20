@@ -7,6 +7,11 @@ from wxcloudrun.models import Counters, Member
 
 logger = logging.getLogger('log')
 
+def add_request_log(request):
+    logger.info('get_user_info request url: {},\n'
+                'method: {},\n'
+                'headers: {},\n'
+                'body: {}'.format(request.url, request.method, request.headers, request.body))
 
 def index(request, _):
     """
@@ -89,13 +94,28 @@ def update_count(request):
         return JsonResponse({'code': -1, 'errorMsg': 'action参数错误'},
                     json_dumps_params={'ensure_ascii': False})
 
+def set_user_info(request):
+    """
+    配置用户信息
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    assert request.method == 'UPDATE', 'POST method not allowed'
+    openid = request.headers.get('X-Wx-openid', "no openid")
+    user = Member.objects.get(openid=openid)
+    user.update(**request.body)
+    user_info = user.to_dict()
+    return JsonResponse(user_info,
+                        json_dumps_params={'ensure_ascii': False})
+
 def get_user_info(request):
     """
     获取用户信息
 
      `` request `` 请求对象
     """
-    logger.info('get_user_infoe request: {}'.format(request.headers))
+    add_request_log(request)
     openid = request.headers.get('X-Wx-openid', "no openid")
     user = Member.objects.filter(openid=openid)
     if not user:
@@ -115,7 +135,7 @@ def apply_join_club(request):
 
      `` request `` 请求对象
     """
-    logger.info('apply_join_club request: {}'.format(request.headers))
+    add_request_log(request)
     openid = request.headers.get('X-Wx-openid')
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
