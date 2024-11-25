@@ -3,7 +3,7 @@ import logging
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from wxcloudrun.models import Counters, Member
+from wxcloudrun.models import Counters, Member, RechargeRecord, ActivityMember, Activity
 
 logger = logging.getLogger('log')
 
@@ -103,8 +103,7 @@ def set_user_info(request):
     add_request_log(request)
     assert request.method == 'PUT', 'only PUT method is allowed'
     openid = request.headers.get('X-Wx-openid', "no openid")
-    user = Member.objects.get(openid=openid)
-    user.update(**request.body)
+    user = Member.objects.filter(openid=openid).update(**request.body)
     user_info = user.to_dict()
     return JsonResponse(user_info,
                         json_dumps_params={'ensure_ascii': False})
@@ -136,7 +135,7 @@ def apply_join_club(request):
      `` request `` 请求对象
     """
     add_request_log(request)
-    openid = request.headers.get('X-Wx-openid')
+    openid = request.headers.get('X-Wx-openid') or request.META["headers"].get('X-Wx-openid')
     body_unicode = request.body.decode('utf-8')
     body = json.loads(body_unicode)
 
@@ -150,3 +149,87 @@ def apply_join_club(request):
     user_info = user.to_dict()
     return JsonResponse(user_info,
                         json_dumps_params={'ensure_ascii': False})
+
+
+def get_personal_charge_info_and_activity_history(request):
+    """
+    获取用户充值信息和活动历史
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    openid = request.headers.get('X-Wx-openid') or request.META["headers"].get('X-Wx-openid')
+    charge_info = RechargeRecord.get_current_info(openid)
+    activity_history = ActivityMember.get_activity_history(openid)
+    return JsonResponse({'charge_info': charge_info, 'activity_history': activity_history},
+                        json_dumps_params={'ensure_ascii': False})
+
+def get_overview_history_activity(request):
+    """
+    获取历史活动
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    activity_history = Activity.get_overview_history_activity()
+    return JsonResponse({'activity_history': activity_history},
+                        json_dumps_params={'ensure_ascii': False})
+
+def get_exact_history_activity(request, activity_id):
+    """
+    获取某一活动的详细信息
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    activity_info = Activity.get_exact_history_activity_by_id(activity_id)
+    return JsonResponse({'activity_detailed_info': activity_info},
+                        json_dumps_params={'ensure_ascii': False})
+
+
+def activity(request):
+    """
+    活动
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    if request.method == "GET":
+        return get_overview_history_activity(request)
+    elif request.method == "POST":
+        dicted_body = json.loads(request.body)
+        obj = Activity.objects.create(datetime=dicted_body['datetime'], location=dicted_body['location'],
+                                headcount=dicted_body['headcount'], comment=dicted_body['comment'],
+                                status=dicted_body['status'], type=dicted_body['type'], other=dicted_body.get['other', "{}"])
+        activity_info = obj.get_exact_history_activity_by_id()
+        return JsonResponse({'activity_detailed_info': activity_info},
+                            json_dumps_params={'ensure_ascii': False})
+
+    elif request.method == "PUT":
+        dicted_body = json.loads(request.body)
+        obj = Activity.objects.filter(id=dicted_body['activity_id']).update(**dicted_body)
+        activity_info = obj.get_exact_history_activity_by_id()
+        return JsonResponse({'activity_detailed_info': activity_info},
+                            json_dumps_params={'ensure_ascii': False})
+
+def member_activity(request):
+    """
+    会员活动
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    if request.method == "GET":
+        return get_personal_charge_info_and_activity_history(request)
+    elif request.method == "POST":
+        dicted_body = json.loads(request.body)
+        obj = ActivityMember.objects.create(activity_id=dicted_body['activity_id'], member_id=dicted_body['member_id'])
+        activity_info = obj.get_exact_history_activity_by_id()
+        return JsonResponse({'activity_detailed_info': activity_info},
+                            json_dumps_params={'ensure_ascii': False})
+    elif request.method == "PUT":
+        dicted_body = json.loads(request.body)
+        obj = ActivityMember.objects.filter(id=dicted_body['id']).update(**dicted_body)
+        activity_info = obj.get_exact_history_activity_by_id()
+        return JsonResponse({'activity_detailed_info': activity_info},
+                            json_dumps_params={'ensure_ascii': False})

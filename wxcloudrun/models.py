@@ -39,6 +39,23 @@ class Activity(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
+    @classmethod
+    def get_overview_history_activity(cls):
+        qs = cls.objects.all()
+        return[{"datetime": obj.datetime, "location": obj.location, "status": obj.status} for obj in qs]
+
+    @classmethod
+    def get_exact_history_activity_by_id(cls, activity_id):
+        obj = cls.objects.filter(id=activity_id).first()
+        joiner_info = [{"nickname": obj.member.nickname, "avatar":obj.member.avatar} for obj in ActivityMember.objects.filter(activity=obj)]
+        return{"datetime": obj.datetime, "location": obj.location, "status": obj.status, "comment": obj.comment,
+               "type": obj.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
+
+    def get_exact_history_activity(self):
+        joiner_info = [{"nickname": obj.member.nickname, "avatar":obj.member.avatar} for obj in ActivityMember.objects.filter(activity=self)]
+        return{"datetime": self.datetime, "location": self.location, "status": self.status, "comment": self.comment,
+               "type": self.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
+
 
 class Member(models.Model):
     ROLE_CHOICES = [
@@ -49,6 +66,7 @@ class Member(models.Model):
         ('current', '现役会员'),
         ('retired', '退役会员'),
         ('reserve', '后补会员'),
+        ('guest', '散客'),
     ]
 
     openid = models.CharField(max_length=100)
@@ -74,6 +92,13 @@ class Member(models.Model):
         self.avatar = avatar
         self.save()
 
+    def create_guest(self, openid, nickname, avatar):
+        self.openid = openid
+        self.nickname = nickname
+        self.avatar = avatar
+        self.type = 'guest'
+        self.save()
+
 
 class ActivityMember(models.Model):
     PARTICIPATION_TYPE_CHOICES = [
@@ -89,6 +114,14 @@ class ActivityMember(models.Model):
     other = models.TextField(blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_activity_history(cls, member_openid):
+        qs = ActivityMember.objects.filter(member__openid=member_openid)
+        if not qs.exists():
+            return []
+        qs = qs.order_by('-create_time')
+        return [{"datetime": obj.activity.datetime, "location": obj.activity} for obj in qs]
 
 
 class RechargeRecord(models.Model):
@@ -112,3 +145,13 @@ class RechargeRecord(models.Model):
     other = models.TextField(blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
+
+    @classmethod
+    def get_current_info(cls, member_openid):
+        qs =  RechargeRecord.objects.filter(member__openid=member_openid)
+        if not qs.exists():
+            return {"activity_count": 0, "pay_load": 0}
+        obj = qs.order_by('-create_time')[0]
+        return {"activity_count": qs.count(), "pay_load": obj.pay_load}
+
+
