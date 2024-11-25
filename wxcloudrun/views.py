@@ -103,7 +103,7 @@ def set_user_info(request):
     add_request_log(request)
     assert request.method == 'PUT', 'only PUT method is allowed'
     openid = request.headers.get('X-Wx-openid', "no openid")
-    user = Member.objects.filter(openid=openid).update(**request.body)
+    user = Member.objects.filter(openid=openid).update(**json.loads(request.body))
     user_info = user.to_dict()
     return JsonResponse(user_info,
                         json_dumps_params={'ensure_ascii': False})

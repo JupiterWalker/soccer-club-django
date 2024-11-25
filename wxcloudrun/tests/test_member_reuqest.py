@@ -22,3 +22,9 @@ class ActionQueryTestCase(TestCase):
         response = self.client.get('/get_personal_charge_info_and_activity_history/',
                                     content_type="application/json", headers={"X-Wx-openid" :"111"})
         self.assertEqual(response.status_code, 200)
+
+    def test_set_user_info(self):
+        response = self.client.put('/set_user_info/',
+                                    content_type="application/json", headers={"X-Wx-openid" :"111"},
+                                    data='{"avatar": "avatar:123456789"}')
+        self.assertEqual(response.status_code, 200)
