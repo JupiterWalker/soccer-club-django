@@ -104,13 +104,14 @@ def set_user_info(request):
     assert request.method == 'PUT', 'only PUT method is allowed'
     openid = request.headers.get('X-Wx-openid', "no openid")
     user_info = json.loads(request.body)
-    user = Member.objects.filter(openid=openid)
-    if not user.exists():
+    users = Member.objects.filter(openid=openid)
+    if not users.exists():
         user = Member()
         user.create_new_member(openid=openid, nickname=user_info.get('nickname', "未命名"),
                                avatar=user_info.get('avatar', "未命名"))
     else:
-        user.first().update(**json.loads(request.body))
+        users.update(**json.loads(request.body))
+        user = users[0]
     user_info = user.to_dict()
     return JsonResponse(user_info,
                         json_dumps_params={'ensure_ascii': False})
