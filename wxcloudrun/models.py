@@ -66,7 +66,7 @@ class Activity(models.Model):
             "activity_info": {
                 "datetime": self.datetime, "location": self.location, "latitude": self.latitude,
                 "longitude": self.longitude, "status": self.status, "comment": self.comment,
-                "type": self.type, "headcount": len(joiner_info)
+                "type": self.type, "headcount": self.headcount
             },
             "member_infos": joiner_info
         }
