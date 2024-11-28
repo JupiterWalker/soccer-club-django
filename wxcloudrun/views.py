@@ -110,7 +110,7 @@ def set_user_info(request):
         user.create_new_member(openid=openid, nickname=user_info.get('nickname', "未命名"),
                                avatar=user_info.get('avatar', "未命名"))
     else:
-        users.update(**json.loads(request.body))
+        users.update(**user_info)
         user = users[0]
     user_info = user.to_dict()
     return JsonResponse(user_info,
@@ -195,22 +195,34 @@ def get_exact_history_activity(request, activity_id):
                         json_dumps_params={'ensure_ascii': False})
 
 
-def activity(request):
+def get_activity_info(activity_id):
+    """
+    获取某一活动的详细信息
+
+     `` request `` 请求对象
+    """
+    activity_all_info = Activity.objects.get(id=activity_id).get_activity_all_info()
+    return JsonResponse(activity_all_info,
+                        json_dumps_params={'ensure_ascii': False})
+
+def activity(request, activity_id=None):
     """
     活动
 
      `` request `` 请求对象
     """
     add_request_log(request)
-    if request.method == "GET":
-        return get_overview_history_activity(request)
+    if request.method == "GET" and activity_id:
+        return get_activity_info(activity_id)
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
-        obj = Activity.objects.create(datetime=dicted_body['datetime'], location=dicted_body['location'],
-                                headcount=dicted_body['headcount'], comment=dicted_body['comment'],
-                                status=dicted_body['status'], type=dicted_body['type'], other=dicted_body.get['other', "{}"])
-        activity_info = obj.get_exact_history_activity_by_id()
-        return JsonResponse({'activity_detailed_info': activity_info},
+        obj = Activity.objects.create(
+            datetime=dicted_body['datetime'], location=dicted_body['location'],
+            latitude=dicted_body['latitude'], longitude=dicted_body['longitude'],
+            headcount=dicted_body['headcount'], comment=dicted_body['comment'],
+            type=dicted_body['type'], other=dicted_body.get('other', "{}")
+        )
+        return JsonResponse({'activity_id': obj.id},
                             json_dumps_params={'ensure_ascii': False})
 
     elif request.method == "PUT":
@@ -231,13 +243,28 @@ def member_activity(request):
         return get_personal_charge_info_and_activity_history(request)
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
-        obj = ActivityMember.objects.create(activity_id=dicted_body['activity_id'], member_id=dicted_body['member_id'])
-        activity_info = obj.get_exact_history_activity_by_id()
-        return JsonResponse({'activity_detailed_info': activity_info},
+        activity = Activity.objects.get(id=dicted_body['activity_id'])
+        member = Member.objects.get(openid=dicted_body['openid'])
+        activity_member = ActivityMember.objects.create(activity=activity, member_id=member)
+        objs = ActivityMember.objects.filter(activity=activity)
+        member_infos = [{"avatar": obj.member.avatar, "nickname": obj.member.nickname, "type": obj.type} for obj in objs]
+
+        return JsonResponse({'activity_member_id':activity_member.id, 'activity': activity.to_dict(),
+                             "member_infos": member_infos},
                             json_dumps_params={'ensure_ascii': False})
     elif request.method == "PUT":
         dicted_body = json.loads(request.body)
-        obj = ActivityMember.objects.filter(id=dicted_body['id']).update(**dicted_body)
-        activity_info = obj.get_exact_history_activity_by_id()
-        return JsonResponse({'activity_detailed_info': activity_info},
+        activity = Activity.objects.get(id=dicted_body['activity_id'])
+        activity_member = ActivityMember.objects.get(id=dicted_body['activity_member_id'])
+        activity_member.type = dicted_body['type']
+        activity_member.save()
+        member_infos = [
+            {
+                "avatar": obj.member.avatar,
+                "nickname": obj.member.nickname,
+                "type": obj.type
+            } for obj in ActivityMember.objects.filter(activity=activity)
+        ]
+        return JsonResponse({'activity_member_id':activity_member.id, 'activity': activity.to_dict(),
+                             "member_infos": member_infos},
                             json_dumps_params={'ensure_ascii': False})

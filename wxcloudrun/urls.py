@@ -30,6 +30,7 @@ urlpatterns = (
     path("get_overview_history_activity/", views.get_overview_history_activity),
     path("get_exact_history_activity/<int:activity_id>/", views.get_exact_history_activity),
     path("activity/", views.activity),
+    path("activity/<int:activity_id>/", views.activity),
     path("member_activity/", views.member_activity),
     # 获取主页
     # url(r'(/)?$', views.index),

@@ -1,3 +1,5 @@
+import json
+
 from django.test import TestCase
 
 
@@ -27,4 +29,11 @@ class ActionQueryTestCase(TestCase):
         response = self.client.put('/set_user_info/',
                                     content_type="application/json", headers={"X-Wx-openid" :"111"},
                                     data='{"avatar": "avatar:123456789"}')
+        self.assertEqual(response.status_code, 200)
+
+    def test_create_activity(self):
+        response = self.client.post('/activity/',
+                                    content_type="application/json", headers={"X-Wx-openid" :"111"},
+                                    data=json.dumps({"location": "location", "datetime": "2024-11-11 10:10:10.23123",
+                                                     "type": "match", "comment": "comment", "headcount": 10, "latitude": 1.0, "longitude": 1.0}))
         self.assertEqual(response.status_code, 200)

@@ -31,6 +31,8 @@ class Activity(models.Model):
 
     datetime = models.DateTimeField()
     location = models.CharField(max_length=255)
+    latitude = models.FloatField()
+    longitude = models.FloatField()
     headcount = models.IntegerField()
     comment = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='published')
@@ -39,22 +41,35 @@ class Activity(models.Model):
     create_time = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
+    def to_dict(self):
+        return {"id": self.id, "datetime": self.datetime, "location": self.location, "latitude": self.latitude, "longitude": self.longitude,
+                "headcount": self.headcount, "comment": self.comment, "status": self.status, "type": self.type,
+                "other": self.other, "create_time": self.create_time, "last_update": self.last_update}
+
     @classmethod
     def get_overview_history_activity(cls):
         qs = cls.objects.all()
-        return[{"datetime": obj.datetime, "location": obj.location, "status": obj.status} for obj in qs]
+        return [{"datetime": obj.datetime, "location": obj.location, "status": obj.status} for obj in qs]
 
     @classmethod
     def get_exact_history_activity_by_id(cls, activity_id):
         obj = cls.objects.filter(id=activity_id).first()
-        joiner_info = [{"nickname": obj.member.nickname, "avatar":obj.member.avatar} for obj in ActivityMember.objects.filter(activity=obj)]
-        return{"datetime": obj.datetime, "location": obj.location, "status": obj.status, "comment": obj.comment,
-               "type": obj.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
+        joiner_info = [{"nickname": obj.member.nickname, "avatar": obj.member.avatar} for obj in
+                       ActivityMember.objects.filter(activity=obj)]
+        return {"datetime": obj.datetime, "location": obj.location, "status": obj.status, "comment": obj.comment,
+                "type": obj.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
 
-    def get_exact_history_activity(self):
-        joiner_info = [{"nickname": obj.member.nickname, "avatar":obj.member.avatar} for obj in ActivityMember.objects.filter(activity=self)]
-        return{"datetime": self.datetime, "location": self.location, "status": self.status, "comment": self.comment,
-               "type": self.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
+    def get_activity_all_info(self):
+        joiner_info = [{"nickname": obj.member.nickname, "avatar": obj.member.avatar} for obj in
+                       ActivityMember.objects.filter(activity=self)]
+        return {
+            "activity_info": {
+                "datetime": self.datetime, "location": self.location, "latitude": self.latitude,
+                "longitude": self.longitude, "status": self.status, "comment": self.comment,
+                "type": self.type, "headcount": len(joiner_info)
+            },
+            "member_infos": joiner_info
+        }
 
 
 class Member(models.Model):
@@ -70,7 +85,7 @@ class Member(models.Model):
     ]
 
     openid = models.CharField(max_length=100)
-    avatar = models.CharField(max_length=100, null=True, blank=True)
+    avatar = models.CharField(max_length=150, null=True, blank=True)
     nickname = models.CharField(max_length=100)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
     type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='reserve')
@@ -107,7 +122,6 @@ class ActivityMember(models.Model):
         ('take_leave', 'take leave'),
     ]
 
-    id = models.AutoField(primary_key=True)
     activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     type = models.CharField(max_length=10, choices=PARTICIPATION_TYPE_CHOICES, default='present')
@@ -135,7 +149,6 @@ class RechargeRecord(models.Model):
         ('take_leave', 'take leave'),
     ]
 
-
     id = models.AutoField(primary_key=True)
     member = models.ForeignKey(Member, on_delete=models.CASCADE)
     operation = models.CharField(max_length=10, choices=OPERATION_CHOICES, default='save')
@@ -148,10 +161,8 @@ class RechargeRecord(models.Model):
 
     @classmethod
     def get_current_info(cls, member_openid):
-        qs =  RechargeRecord.objects.filter(member__openid=member_openid)
+        qs = RechargeRecord.objects.filter(member__openid=member_openid)
         if not qs.exists():
             return {"activity_count": 0, "pay_load": 0}
         obj = qs.order_by('-create_time')[0]
         return {"activity_count": qs.count(), "pay_load": obj.pay_load}
-
-
