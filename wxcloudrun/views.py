@@ -245,7 +245,7 @@ def member_activity(request):
         dicted_body = json.loads(request.body)
         activity = Activity.objects.get(id=dicted_body['activity_id'])
         member = Member.objects.get(openid=dicted_body['openid'])
-        activity_member = ActivityMember.objects.create(activity=activity, member_id=member)
+        activity_member = ActivityMember.objects.create(activity=activity, member=member)
         objs = ActivityMember.objects.filter(activity=activity)
         member_infos = [{"avatar": obj.member.avatar, "nickname": obj.member.nickname, "type": obj.type} for obj in objs]
 
