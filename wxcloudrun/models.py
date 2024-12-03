@@ -78,14 +78,14 @@ class Activity(models.Model):
 
     @classmethod
     def get_all_activity_record(cls):
-        qs = ActivityMember.objects.all()
+        qs = Activity.objects.all()
         qs = qs.order_by('-create_time')
         return [{
-            "activity_id": obj.activity.id,
-            "datetime": obj.activity.datetime,
-            "location": obj.activity.location,
-            "type": obj.activity.type,
-            "status": obj.activity.status
+            "activity_id": obj.id,
+            "datetime": obj.datetime,
+            "location": obj.location,
+            "type": obj.type,
+            "status": obj.status
         } for obj in qs]
 
 
