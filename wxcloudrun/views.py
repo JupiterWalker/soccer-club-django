@@ -199,7 +199,7 @@ def activity(request, activity_id=None):
      `` request `` 请求对象
     """
     add_request_log(request)
-    if request.method == "GET" and activity_id:
+    if request.method == "GET":
         if activity_id:
             data = get_activity_info(activity_id)
         else:
