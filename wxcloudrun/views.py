@@ -159,18 +159,6 @@ def apply_join_club(request):
                         json_dumps_params={'ensure_ascii': False})
 
 
-def get_personal_charge_info_and_activity_history(request):
-    """
-    获取用户充值信息和活动历史
-
-     `` request `` 请求对象
-    """
-    add_request_log(request)
-    openid = request.headers.get('X-Wx-openid') or request.META["headers"].get('X-Wx-openid')
-    charge_info = RechargeRecord.get_current_info(openid)
-    activity_history = ActivityMember.get_activity_history(openid)
-    return JsonResponse({'charge_info': charge_info, 'activity_history': activity_history},
-                        json_dumps_params={'ensure_ascii': False})
 
 def get_overview_history_activity(request):
     """
@@ -202,8 +190,7 @@ def get_activity_info(activity_id):
      `` request `` 请求对象
     """
     activity_all_info = Activity.objects.get(id=activity_id).get_activity_all_info()
-    return JsonResponse(activity_all_info,
-                        json_dumps_params={'ensure_ascii': False})
+    return activity_all_info
 
 def activity(request, activity_id=None):
     """
@@ -213,7 +200,12 @@ def activity(request, activity_id=None):
     """
     add_request_log(request)
     if request.method == "GET" and activity_id:
-        return get_activity_info(activity_id)
+        if activity_id:
+            data = get_activity_info(activity_id)
+        else:
+            data = Activity.get_all_activity_record()
+        return JsonResponse(data,
+                     json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
         obj = Activity.objects.create(
@@ -240,7 +232,11 @@ def member_activity(request):
     """
     add_request_log(request)
     if request.method == "GET":
-        return get_personal_charge_info_and_activity_history(request)
+        openid = request.headers.get('X-Wx-openid') or request.META["headers"].get('X-Wx-openid')
+        charge_info = RechargeRecord.get_current_info(openid)
+        activity_history = ActivityMember.get_activity_record_by_openid(openid)
+        return JsonResponse({'charge_info': charge_info, 'activity_history': activity_history},
+                                json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
         activity = Activity.objects.get(id=dicted_body['activity_id'])
@@ -252,7 +248,7 @@ def member_activity(request):
         return JsonResponse({'activity_member_id':activity_member.id, 'activity': activity.to_dict(),
                              "member_infos": member_infos},
                             json_dumps_params={'ensure_ascii': False})
-    elif request.method == "PUT":
+    elif request.method == "PATCH":
         dicted_body = json.loads(request.body)
         activity = Activity.objects.get(id=dicted_body['activity_id'])
         activity_member = ActivityMember.objects.get(id=dicted_body['activity_member_id'])

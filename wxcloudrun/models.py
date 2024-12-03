@@ -60,8 +60,13 @@ class Activity(models.Model):
                 "type": obj.type, "headcount": len(joiner_info), "joiner_openid": joiner_info}
 
     def get_activity_all_info(self):
-        joiner_info = [{"nickname": obj.member.nickname, "avatar": obj.member.avatar} for obj in
-                       ActivityMember.objects.filter(activity=self)]
+        joiner_info = [
+            {
+                "nickname": obj.member.nickname,
+                "avatar": obj.member.avatar,
+                "type": obj.type
+            } for obj in ActivityMember.objects.filter(activity=self)
+        ]
         return {
             "activity_info": {
                 "datetime": self.datetime, "location": self.location, "latitude": self.latitude,
@@ -70,6 +75,18 @@ class Activity(models.Model):
             },
             "member_infos": joiner_info
         }
+
+    @classmethod
+    def get_all_activity_record(cls):
+        qs = ActivityMember.objects.all()
+        qs = qs.order_by('-create_time')
+        return [{
+            "datetime": obj.activity.datetime,
+            "location": obj.activity,
+            "type": obj.activity.type,
+            "status": obj.activity.status
+        } for obj in qs]
+
 
 
 class Member(models.Model):
@@ -122,20 +139,25 @@ class ActivityMember(models.Model):
         ('take_leave', 'take leave'),
     ]
 
-    activity = models.ForeignKey(Activity, on_delete=models.CASCADE)
-    member = models.ForeignKey(Member, on_delete=models.CASCADE)
+    activity = models.ForeignKey(Activity, on_delete=models.CASCADE, related_name='activity_member')
+    member = models.ForeignKey(Member, on_delete=models.CASCADE, related_name='activity_member')
     type = models.CharField(max_length=10, choices=PARTICIPATION_TYPE_CHOICES, default='present')
     other = models.TextField(blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     @classmethod
-    def get_activity_history(cls, member_openid):
-        qs = ActivityMember.objects.filter(member__openid=member_openid)
+    def get_activity_record_by_openid(cls, openid):
+        qs = ActivityMember.objects.filter(member__openid=openid)
         if not qs.exists():
             return []
         qs = qs.order_by('-create_time')
-        return [{"datetime": obj.activity.datetime, "location": obj.activity} for obj in qs]
+        return [{
+            "datetime": obj.activity.datetime,
+            "location": obj.activity,
+            "type": obj.activity.type,
+            "status": obj.activity.status
+        } for obj in qs]
 
 
 class RechargeRecord(models.Model):
