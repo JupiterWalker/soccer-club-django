@@ -26,7 +26,6 @@ urlpatterns = (
     path("get_user_info/", views.get_user_info),
     path("apply_join_club/", views.apply_join_club),
     path("set_user_info/", views.set_user_info),
-    path("get_personal_charge_info_and_activity_history/", views.get_personal_charge_info_and_activity_history),
     path("get_overview_history_activity/", views.get_overview_history_activity),
     path("get_exact_history_activity/<int:activity_id>/", views.get_exact_history_activity),
     path("activity/", views.activity),
