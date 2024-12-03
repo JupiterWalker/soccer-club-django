@@ -204,7 +204,7 @@ def activity(request, activity_id=None):
             data = get_activity_info(activity_id)
         else:
             data = Activity.get_all_activity_record()
-        return JsonResponse(data,
+        return JsonResponse({"activity_history_list": data},
                      json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
