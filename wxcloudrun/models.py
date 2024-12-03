@@ -154,7 +154,7 @@ class ActivityMember(models.Model):
         qs = qs.order_by('-create_time')
         return [{
             "datetime": obj.activity.datetime,
-            "location": obj.activity,
+            "location": obj.activity.location,
             "type": obj.activity.type,
             "status": obj.activity.status
         } for obj in qs]
