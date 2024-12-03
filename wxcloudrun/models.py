@@ -64,7 +64,8 @@ class Activity(models.Model):
             {
                 "nickname": obj.member.nickname,
                 "avatar": obj.member.avatar,
-                "type": obj.type
+                "type": obj.type,
+                "openid": obj.member.openid
             } for obj in ActivityMember.objects.filter(activity=self)
         ]
         return {
