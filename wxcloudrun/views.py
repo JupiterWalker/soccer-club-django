@@ -264,3 +264,39 @@ def member_activity(request):
         return JsonResponse({'activity_member_id':activity_member.id, 'activity': activity.to_dict(),
                              "member_infos": member_infos},
                             json_dumps_params={'ensure_ascii': False})
+
+
+
+def member(request):
+    """
+    会员
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    if request.method == "GET":
+        # openid = request.headers.get('X-Wx-openid') or request.META["headers"].get('X-Wx-openid')
+        users = Member.objects.all()
+        data = [user.to_dict() for user in users]
+        return JsonResponse({"member_infos": data},
+                            json_dumps_params={'ensure_ascii': False})
+    elif request.method == "POST":
+        dicted_body = json.loads(request.body)
+        user = Member.objects.create(openid=dicted_body['openid'], nickname=dicted_body['nickname'],
+                                     avatar=dicted_body['avatar'])
+        return JsonResponse(user.to_dict(),
+                            json_dumps_params={'ensure_ascii': False})
+    elif request.method == "PATCH":
+        dicted_body = json.loads(request.body)
+        user = Member.objects.get(openid=dicted_body['openid'])
+        user.nickname = dicted_body['nickname']
+        user.avatar = dicted_body['avatar']
+        user.save()
+        return JsonResponse(user.to_dict(),
+                            json_dumps_params={'ensure_ascii': False})
+    elif request.method == "DELETE":
+        dicted_body = json.loads(request.body)
+        user = Member.objects.get(openid=dicted_body['openid'])
+        user.delete()
+        return JsonResponse({'code': 0, 'errorMsg': ''},
+                            json_dumps_params={'ensure_ascii': False})
