@@ -31,7 +31,7 @@ urlpatterns = (
     path("activity/", views.activity),
     path("activity/<int:activity_id>/", views.activity),
     path("member_activity/", views.member_activity),
-    path("member/", views.member_activity),
+    path("member/", views.member),
     # 获取主页
     # url(r'(/)?$', views.index),
 )
