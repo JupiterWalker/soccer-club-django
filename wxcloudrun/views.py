@@ -300,3 +300,31 @@ def member(request):
         user.delete()
         return JsonResponse({'code': 0, 'errorMsg': ''},
                             json_dumps_params={'ensure_ascii': False})
+
+
+def admin_audit(request):
+    """
+    管理员审核
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    if request.method == "GET":
+        objs = Member.objects.filter(type="reserve")
+        data = [{"openid": obj.activity.id, "avatar": obj.id,
+                 "nickname": obj.member.nickname, } for obj in objs]
+        return JsonResponse(data,
+                            json_dumps_params={'ensure_ascii': False})
+    elif request.method == "POST":
+        dicted_body = json.loads(request.body)
+        member = Member.objects.get(openid=dicted_body['openid']).first()
+        member.type = dicted_body['type']
+        member.save()
+        objs = Member.objects.filter(type="reserve")
+        data = [{"openid": obj.activity.id, "avatar": obj.id,
+                 "nickname": obj.member.nickname, } for obj in objs]
+        return JsonResponse(data,
+                            json_dumps_params={'ensure_ascii': False})
+    else:
+        return JsonResponse({'code': -1, 'errorMsg': '请求方式错误'},
+                            json_dumps_params={'ensure_ascii': False})
