@@ -317,7 +317,7 @@ def admin_audit(request):
                             json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
-        member = Member.objects.get(openid=dicted_body['openid']).first()
+        member = Member.objects.get(openid=dicted_body['openid'])
         member.type = dicted_body['type']
         member.save()
         objs = Member.objects.filter(type="reserve")
