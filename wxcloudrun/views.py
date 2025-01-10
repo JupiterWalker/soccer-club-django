@@ -311,8 +311,8 @@ def admin_audit(request):
     add_request_log(request)
     if request.method == "GET":
         objs = Member.objects.filter(type="reserve")
-        data = [{"openid": obj.activity.id, "avatar": obj.id,
-                 "nickname": obj.member.nickname, } for obj in objs]
+        data = [{"openid": obj.openid, "avatar": obj.avatar,
+                 "nickname": obj.nickname } for obj in objs]
         return JsonResponse(data,
                             json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
@@ -321,8 +321,8 @@ def admin_audit(request):
         member.type = dicted_body['type']
         member.save()
         objs = Member.objects.filter(type="reserve")
-        data = [{"openid": obj.activity.id, "avatar": obj.id,
-                 "nickname": obj.member.nickname, } for obj in objs]
+        data = [{"openid": obj.openid, "avatar": obj.avatar,
+                 "nickname": obj.nickname } for obj in objs]
         return JsonResponse(data,
                             json_dumps_params={'ensure_ascii': False})
     else:
