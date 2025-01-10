@@ -313,7 +313,7 @@ def admin_audit(request):
         objs = Member.objects.filter(type="reserve")
         data = [{"openid": obj.openid, "avatar": obj.avatar,
                  "nickname": obj.nickname } for obj in objs]
-        return JsonResponse(data,
+        return JsonResponse(data, safe=False,
                             json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
@@ -323,7 +323,7 @@ def admin_audit(request):
         objs = Member.objects.filter(type="reserve")
         data = [{"openid": obj.openid, "avatar": obj.avatar,
                  "nickname": obj.nickname } for obj in objs]
-        return JsonResponse(data,
+        return JsonResponse(data, safe=False,
                             json_dumps_params={'ensure_ascii': False})
     else:
         return JsonResponse({'code': -1, 'errorMsg': '请求方式错误'},
