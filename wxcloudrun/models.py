@@ -191,3 +191,13 @@ class RechargeRecord(models.Model):
             return {"activity_count": 0, "pay_load": 0}
         obj = qs.order_by('-create_time')[0]
         return {"activity_count": qs.count(), "pay_load": obj.pay_load}
+
+class Environment(models.Model):
+    value = models.CharField(max_length=100, default='dev')
+    create_time = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+
+    @classmethod
+    def get_value(cls):
+        return cls.objects.first().value

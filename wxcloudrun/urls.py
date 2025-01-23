@@ -33,6 +33,7 @@ urlpatterns = (
     path("member_activity/", views.member_activity),
     path("member/", views.member),
     path("admin/audit", views.admin_audit),
+    path("env/", views.env),
     # 获取主页
     # url(r'(/)?$', views.index),
 )

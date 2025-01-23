@@ -3,7 +3,7 @@ import logging
 
 from django.http import JsonResponse
 from django.shortcuts import render
-from wxcloudrun.models import Counters, Member, RechargeRecord, ActivityMember, Activity
+from wxcloudrun.models import Counters, Member, RechargeRecord, ActivityMember, Activity, Environment
 
 logger = logging.getLogger('log')
 
@@ -114,6 +114,17 @@ def set_user_info(request):
         user = users[0]
     user_info = user.to_dict()
     return JsonResponse(user_info,
+                        json_dumps_params={'ensure_ascii': False})
+
+def env(request):
+    """
+    获取环境变量
+
+     `` request `` 请求对象
+    """
+    add_request_log(request)
+    env = Environment.get_value()
+    return JsonResponse({"env": env},
                         json_dumps_params={'ensure_ascii': False})
 
 def get_user_info(request):
