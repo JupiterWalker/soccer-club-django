@@ -107,7 +107,7 @@ class Member(models.Model):
     avatar = models.CharField(max_length=150, null=True, blank=True)
     nickname = models.CharField(max_length=100)
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='normal')
-    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='reserve')
+    type = models.CharField(max_length=10, choices=TYPE_CHOICES, default='guest')
     description = models.TextField(blank=True, null=True)
     other = models.TextField(blank=True, null=True)
     create_time = models.DateTimeField(auto_now_add=True)
@@ -124,6 +124,7 @@ class Member(models.Model):
         self.openid = openid
         self.nickname = nickname
         self.avatar = avatar
+        self.type = 'reserve'
         self.save()
 
     def create_guest(self, openid, nickname, avatar):

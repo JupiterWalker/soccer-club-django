@@ -164,6 +164,8 @@ def apply_join_club(request):
         user.create_new_member(openid=openid, nickname=body['nickname'], avatar=body['avatar'])
     else:
         user = user[0]
+        user.type = "reserve"
+        user.save()
 
     user_info = user.to_dict()
     return JsonResponse(user_info,
@@ -294,7 +296,8 @@ def member(request):
                             json_dumps_params={'ensure_ascii': False})
     elif request.method == "POST":
         dicted_body = json.loads(request.body)
-        user = Member.objects.create(openid=dicted_body['openid'], nickname=dicted_body['nickname'],
+        user = Member()
+        user.create_guest(openid=dicted_body['openid'], nickname=dicted_body['nickname'],
                                      avatar=dicted_body['avatar'])
         return JsonResponse(user.to_dict(),
                             json_dumps_params={'ensure_ascii': False})
