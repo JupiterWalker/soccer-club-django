@@ -262,7 +262,9 @@ def member_activity(request):
     elif request.method == "PATCH":
         dicted_body = json.loads(request.body)
         activity = Activity.objects.get(id=dicted_body['activity_id'])
-        activity_member = ActivityMember.objects.get(id=dicted_body['activity_member_id'])
+        member = Member.objects.get(openid=dicted_body['openid'])
+        activity_member = ActivityMember.objects.create(activity=activity, member=member)
+        # activity_member = ActivityMember.objects.get(id=dicted_body['activity_member_id'])
         activity_member.type = dicted_body['type']
         activity_member.save()
         member_infos = [
