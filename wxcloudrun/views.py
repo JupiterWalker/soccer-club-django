@@ -108,7 +108,7 @@ def set_user_info(request):
     if not users.exists():
         user = Member()
         user.create_new_member(openid=openid, nickname=user_info.get('nickname', "未命名"),
-                               avatar=user_info.get('avatar', "未命名"))
+                               avatar=user_info.get('avatar', "未命名"), _type=user_info.get('type'))
     else:
         users.update(**user_info)
         user = users[0]
@@ -161,7 +161,7 @@ def apply_join_club(request):
     user = Member.objects.filter(openid=openid)
     if not user:
         user = Member()
-        user.create_new_member(openid=openid, nickname=body['nickname'], avatar=body['avatar'])
+        user.create_new_member(openid=openid, nickname=body['nickname'], avatar=body['avatar'], _type="reserve")
     else:
         user = user[0]
         user.type = "reserve"

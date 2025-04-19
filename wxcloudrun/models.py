@@ -120,11 +120,11 @@ class Member(models.Model):
                "other": self.other, "create_time": str(self.create_time), "last_update": str(self.last_update)}
         return res
 
-    def create_new_member(self, openid, nickname, avatar):
+    def create_new_member(self, openid, nickname, avatar, _type):
         self.openid = openid
         self.nickname = nickname
         self.avatar = avatar
-        self.type = 'reserve'
+        self.type = _type
         self.save()
 
     def create_guest(self, openid, nickname, avatar):
